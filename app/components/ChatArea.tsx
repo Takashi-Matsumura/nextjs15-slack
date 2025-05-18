@@ -102,7 +102,7 @@ export default function ChatArea({ channel }: Props) {
                   {new Date(msg.createdAt).toLocaleTimeString()}
                 </span>
               </div>
-              <div className="text-gray-800">{msg.content}</div>
+              <div className="text-gray-800 whitespace-pre-wrap">{msg.content}</div>
             </div>
           </div>
         ))}
@@ -112,16 +112,17 @@ export default function ChatArea({ channel }: Props) {
         <div className="w-8 h-8 bg-slate-600 rounded-full flex items-center justify-center text-white mr-3">
           {currentUser ? currentUser.name.charAt(0).toUpperCase() : ''}
         </div>
-        <input
-          type="text"
+        <textarea
           placeholder="メッセージを入力"
-          className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          rows={3}
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           onCompositionStart={() => setIsComposing(true)}
           onCompositionEnd={() => setIsComposing(false)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && !isComposing) {
+            if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
+              e.preventDefault();
               handleSend();
             }
           }}
