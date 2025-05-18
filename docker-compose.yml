@@ -1,11 +1,11 @@
-version: '3'
+version: "3"
 
 services:
-  nextjs-15-3-2:  # サービス名にバージョンを含める
+  nodejs: # サービス名にバージョンを含める
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: nextjs-15-3-2  # 本番用コンテナ名
+    container_name: nodejs # 本番用コンテナ名
     ports:
       - "3000:3000"
     env_file:
@@ -19,7 +19,7 @@ services:
 
   db:
     image: postgres:15
-    container_name: postgres-15-nextjs  # PostgreSQLのバージョンも含める
+    container_name: postgres-15-nextjs # PostgreSQLのバージョンも含める
     ports:
       - "5432:5432"
     environment:
@@ -31,4 +31,4 @@ services:
 
 volumes:
   postgres_data:
-    name: nextjs-15-3-2-postgres-data  # ボリューム名にもバージョンを含める
+    name: nodejs-postgres-data # ボリューム名にもバージョンを含める
