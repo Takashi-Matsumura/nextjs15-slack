@@ -1,23 +1,37 @@
 "use client";
-import React, { useEffect, useState, useRef } from 'react';
+// Client-side stub user switcher
+import React, { useState, useRef, useEffect } from 'react';
 
-interface User {
-  id: number;
+interface StubUser {
+  key: string;
   name: string;
   email: string;
 }
 
+const stubUsers: StubUser[] = [
+  { key: 'alice', name: 'Alice', email: 'alice@example.com' },
+  { key: 'bob', name: 'Bob', email: 'bob@example.com' },
+];
+
+function getCookie(name: string): string | undefined {
+  const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+  return match ? decodeURIComponent(match[1]) : undefined;
+}
+
+function setCookie(name: string, value: string) {
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/`;
+}
+
 export default function UserAvatarMenu() {
-  const [user, setUser] = useState<User | null>(null);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-
+  // Current stub user key, initial 'alice' to match SSR
+  const [currentKey, setCurrentKey] = useState<string>('alice');
   useEffect(() => {
-    fetch('/api/auth/me')
-      .then((res) => res.json())
-      .then((data: User) => setUser(data))
-      .catch((err) => console.error('Failed to fetch user:', err));
+    const cookieUser = getCookie('user') || 'alice';
+    setCurrentKey(cookieUser);
   }, []);
+  const currentUser = stubUsers.find((u) => u.key === currentKey) || stubUsers[0];
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -31,7 +45,14 @@ export default function UserAvatarMenu() {
     }
   }, [open]);
 
-  if (!user) return null;
+  const switchUser = (user: StubUser) => {
+    if (user.key !== currentKey) {
+      setCookie('user', user.key);
+      window.location.reload();
+    } else {
+      setOpen(false);
+    }
+  };
 
   return (
     <div ref={ref} className="relative flex justify-center">
@@ -39,12 +60,24 @@ export default function UserAvatarMenu() {
         onClick={() => setOpen((o) => !o)}
         className="w-10 h-10 bg-slate-600 rounded-full flex items-center justify-center text-white hover:bg-slate-500 transition"
       >
-        {user.name.charAt(0).toUpperCase()}
+        {currentUser.name.charAt(0).toUpperCase()}
       </button>
       {open && (
-        <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-white text-black p-4 rounded shadow-lg z-20">
-          <p className="font-semibold">{user.name}</p>
-          <p className="text-sm text-gray-600">{user.email}</p>
+        <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-white text-black p-2 rounded shadow-lg z-20">
+          {stubUsers.map((u) => (
+            <button
+              key={u.key}
+              onClick={() => switchUser(u)}
+              className={`flex items-center px-4 py-2 w-full text-left hover:bg-gray-100 transition ${
+                u.key === currentKey ? 'font-semibold' : ''
+              }`}
+            >
+              <span className="w-6 h-6 bg-slate-600 rounded-full flex items-center justify-center text-white mr-2">
+                {u.name.charAt(0)}
+              </span>
+              {u.name}
+            </button>
+          ))}
         </div>
       )}
     </div>

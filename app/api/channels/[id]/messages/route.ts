@@ -37,13 +37,22 @@ export async function POST(request: NextRequest, context: { params: any }) {
     if (!content || typeof content !== 'string') {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 });
     }
-    // TODO: replace with real user from session
-    // For now, ensure a stub user exists
-    const stubEmail = 'alice@example.com';
+    // Determine stub user based on cookie (stub session)
+    const cookieUser = request.cookies.get('user')?.value;
+    let stubEmail: string;
+    let stubName: string;
+    if (cookieUser === 'bob') {
+      stubEmail = 'bob@example.com';
+      stubName = 'Bob';
+    } else {
+      stubEmail = 'alice@example.com';
+      stubName = 'Alice';
+    }
+    // Ensure a stub user exists
     const stubUser = await prisma.user.upsert({
       where: { email: stubEmail },
       update: {},
-      create: { name: 'Alice', email: stubEmail, password: 'password' },
+      create: { name: stubName, email: stubEmail, password: 'password' },
     });
     const userId = stubUser.id;
     // @ts-ignore: Message model may not be generated yet
