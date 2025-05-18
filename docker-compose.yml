@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  nextjs-15-3-2:  # サービス名にバージョンを含める
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nextjs-15-3-2  # 本番用コンテナ名
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      # Override DATABASE_URL for container-to-container networking
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/nextjs_db
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    container_name: postgres-15-nextjs  # PostgreSQLのバージョンも含める
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=nextjs_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+    name: nextjs-15-3-2-postgres-data  # ボリューム名にもバージョンを含める
