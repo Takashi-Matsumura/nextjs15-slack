@@ -1,6 +1,6 @@
 "use client";
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from "react";
 
 interface Channel {
   id: number;
@@ -25,7 +25,7 @@ interface Props {
 
 export default function ChatArea({ channel }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(false);
   // Track IME composition state to avoid sending on Enter during Japanese input
   const [isComposing, setIsComposing] = useState(false);
@@ -40,10 +40,10 @@ export default function ChatArea({ channel }: Props) {
   }, [channel.id]);
   // Fetch current user for avatar
   useEffect(() => {
-    fetch('/api/auth/me')
+    fetch("/api/auth/me")
       .then((res) => res.json())
       .then((user: User) => setCurrentUser(user))
-      .catch((err) => console.error('Failed to fetch current user:', err));
+      .catch((err) => console.error("Failed to fetch current user:", err));
   }, []);
 
   const fetchMessages = async () => {
@@ -54,12 +54,12 @@ export default function ChatArea({ channel }: Props) {
       setMessages(data);
       scrollToBottom();
     } catch (e) {
-      console.error('Failed to fetch messages', e);
+      console.error("Failed to fetch messages", e);
     }
   };
 
   const scrollToBottom = () => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleSend = async () => {
@@ -67,15 +67,15 @@ export default function ChatArea({ channel }: Props) {
     setLoading(true);
     try {
       const res = await fetch(`/api/channels/${channel.id}/messages`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: newMessage.trim() }),
       });
       if (!res.ok) throw new Error();
-      setNewMessage('');
+      setNewMessage("");
       await fetchMessages();
     } catch (e) {
-      console.error('Failed to send message', e);
+      console.error("Failed to send message", e);
     }
     setLoading(false);
   };
@@ -89,28 +89,57 @@ export default function ChatArea({ channel }: Props) {
         </div>
         <button className="text-gray-500 hover:text-gray-700">i</button>
       </header>
-      <div className="flex-1 p-4 overflow-y-auto space-y-6 bg-white">
-        {messages.map((msg) => (
-          <div key={msg.id} className="flex items-start space-x-4">
+      <div className="flex-1 p-4 px-10 overflow-y-auto space-y-6 bg-white">
+        {messages.map((msg) => {
+          const isOwn = currentUser?.id === msg.user.id;
+          const avatar = (
             <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center text-white">
               {msg.user.name.charAt(0).toUpperCase()}
             </div>
-            <div>
+          );
+          const content = (
+            <div
+              className={`flex flex-col ${
+                isOwn ? "items-end" : "items-start"
+              } max-w-xs`}
+            >
               <div className="flex items-center space-x-2 mb-1">
                 <span className="font-semibold">{msg.user.name}</span>
                 <span className="text-xs text-gray-400">
                   {new Date(msg.createdAt).toLocaleTimeString()}
                 </span>
               </div>
-              <div className="text-gray-800 whitespace-pre-wrap">{msg.content}</div>
+              <div className="text-gray-800 whitespace-pre-wrap">
+                {msg.content}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+          return (
+            <div
+              key={msg.id}
+              className={`flex items-start space-x-4 ${
+                isOwn ? "justify-end" : "justify-start"
+              }`}
+            >
+              {isOwn ? (
+                <>
+                  {content}
+                  {avatar}
+                </>
+              ) : (
+                <>
+                  {avatar}
+                  {content}
+                </>
+              )}
+            </div>
+          );
+        })}
         <div ref={endRef} />
       </div>
       <div className="p-4 bg-white border-t border-gray-200 flex items-center">
         <div className="w-8 h-8 bg-slate-600 rounded-full flex items-center justify-center text-white mr-3">
-          {currentUser ? currentUser.name.charAt(0).toUpperCase() : ''}
+          {currentUser ? currentUser.name.charAt(0).toUpperCase() : ""}
         </div>
         <textarea
           placeholder="メッセージを入力"
@@ -121,7 +150,7 @@ export default function ChatArea({ channel }: Props) {
           onCompositionStart={() => setIsComposing(true)}
           onCompositionEnd={() => setIsComposing(false)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
+            if (e.key === "Enter" && !e.shiftKey && !isComposing) {
               e.preventDefault();
               handleSend();
             }

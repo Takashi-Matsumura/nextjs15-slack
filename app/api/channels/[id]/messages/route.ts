@@ -1,5 +1,6 @@
 /* eslint-disable */
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 
 
@@ -38,7 +39,9 @@ export async function POST(request: NextRequest, context: { params: any }) {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 });
     }
     // Determine stub user based on cookie (stub session)
-    const cookieUser = request.cookies.get('user')?.value;
+    // Determine stub user from cookie (stub session)
+    const cookieStore = await cookies();
+    const cookieUser = cookieStore.get('user')?.value;
     let stubEmail: string;
     let stubName: string;
     if (cookieUser === 'bob') {
